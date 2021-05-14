@@ -11,6 +11,9 @@ from evaluate import Handler
 H = 40 # height
 W = 40 # width
 N = 16 # number of days in training set
+path_input = "../data2/mat%02d.npy"
+path_output = "../targets/tar%02d.npy"
+path_model = "../models/ckpt_%06d.pth.tar"
 
 def m_reshape(m):
 	"""reshape to (CH, H, W)"""
@@ -62,8 +65,10 @@ class CLSTM(object):
 			# testing
 			tmp = day
 			self.index = day
-		pathx = "D:\\Projects\\data2\\mat%02d.npy" % tmp
-		pathy = "..\\chengdu2\\targets\\tar%02d.npy" % tmp
+		#pathx = "D:\\Projects\\data2\\mat%02d.npy" % tmp
+		#pathy = "..\\chengdu2\\targets\\tar%02d.npy" % tmp
+		pathx = path_input % tmp
+		pathy = path_output % tmp
 		self.inputs = np.load(pathx).astype(float)
 		self.targets = np.load(pathy).astype(float)
 		#print("# Shift to day %d" % tmp)
@@ -95,11 +100,13 @@ class CLSTM(object):
 
 	def save_model(self, step):
 		torch.save({'epoch': step+1, 'state_dict': self.net.state_dict(), 'optimizer': self.optimizer.state_dict()},
-			".\\model6\\ckpt_%06d.pth.tar" % (step + 1))
+			path_model % (step + 1))
+			#".\\model6\\ckpt_%06d.pth.tar" % (step + 1))
 		print("# Model of step %d saved." % (step + 1))
 
 	def restore_from_file(self, ckpt):
-		file_name = ".\\model6\\ckpt_%06d.pth.tar" % ckpt
+		#file_name = ".\\model6\\ckpt_%06d.pth.tar" % ckpt
+		file_name = path_model % ckpt
 		model_CKPT = torch.load(file_name)
 		self.net.load_state_dict(model_CKPT['state_dict'])
 		print("# state_dict of ConvLSTM loaded.")
@@ -157,7 +164,7 @@ def main(ckpt, max_step):
 		for d in range(0, N):
 			model.next_day(0)
 			model.train()
-		if i % 2 == 1:
+		if i % 5 == 1:
 			model.save_model(i)
 	print("# Training finished.")
 
@@ -175,4 +182,4 @@ def main2(ckpt):
 if __name__ == '__main__':
 	# choose main() for training
 	# choose main2() for testing
-	main2(54)
+	main(0, 100)
